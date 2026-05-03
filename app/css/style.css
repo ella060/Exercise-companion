@@ -2,17 +2,17 @@
 
 /* ===== 基础变量 ===== */
 :root {
-    --primary-color: #FF8C9A;      /* 温暖粉红色 */
-    --primary-light: #FFE4E7;
-    --secondary-color: #6ECFB7;    /* 清新绿色 */
-    --accent-color: #FFB347;       /* 温暖橙色 */
+    --primary-color: #EDBCC8;      /* 暖杏色 */
+    --primary-light: #F5E2D1;       /* 奶油杏 */
+    --secondary-color: #7FAEA8;     /* 青绿色 */
+    --accent-color: #F4DFCC;        /* 暖桃色 */
     --text-dark: #4A4A4A;
     --text-light: #8A8A8A;
-    --bg-color: #FFF9F5;
-    --card-bg: #FFFFFF;
-    --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    --radius: 16px;
-    --radius-sm: 10px;
+    --bg-color: #F8EFDE;            /* 米白背景 */
+    --card-bg: #FFFEFA;             /* 纯白卡片 */
+    --shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    --radius: 18px;
+    --radius-sm: 12px;
 }
 
 /* ===== 重置样式 ===== */
@@ -203,6 +203,7 @@ body {
     display: flex;
     align-items: center;
     color: white;
+    box-shadow: 0 4px 16px rgba(127, 174, 168, 0.25);
 }
 
 .caring-icon {
@@ -261,25 +262,25 @@ body {
 }
 
 .btn-play {
-    background: linear-gradient(135deg, var(--primary-color) 0%, #FF6B7A 100%);
+    background: linear-gradient(135deg, var(--secondary-color) 0%, #6B9E98 100%);
     color: white;
     font-weight: bold;
-    box-shadow: 0 4px 12px rgba(255, 140, 154, 0.45);
+    box-shadow: 0 4px 12px rgba(127, 174, 168, 0.35);
 }
 
 .btn-play:active {
     transform: scale(0.95);
-    box-shadow: 0 2px 6px rgba(255, 140, 154, 0.3);
+    box-shadow: 0 2px 6px rgba(127, 174, 168, 0.25);
 }
 
 .btn-delete {
-    background: #FFF5F6;
-    color: var(--primary-color);
-    border: 1px solid rgba(255, 140, 154, 0.35);
+    background: var(--primary-light);
+    color: var(--text-dark);
+    border: 1px solid rgba(237, 188, 200, 0.4);
 }
 
 .btn-delete:active {
-    background: #FFE4E7;
+    background: #EDE4DC;
     transform: scale(0.95);
 }
 
@@ -343,18 +344,18 @@ body {
 
 @keyframes dayPulse {
     0% { transform: scale(1); }
-    50% { transform: scale(1.25); box-shadow: 0 0 15px rgba(255, 140, 154, 0.6); }
+    50% { transform: scale(1.25); box-shadow: 0 0 15px rgba(237, 188, 200, 0.6); }
     100% { transform: scale(1); }
 }
 
 .calendar-grid .day.today {
-    border: 2px solid var(--accent-color);
+    border: 2px solid var(--primary-color);
     animation: todayGlow 2.5s ease-in-out infinite;
 }
 
 @keyframes todayGlow {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(255, 179, 71, 0.5); }
-    50% { box-shadow: 0 0 0 8px rgba(255, 179, 71, 0); }
+    0%, 100% { box-shadow: 0 0 0 0 rgba(237, 188, 200, 0.5); }
+    50% { box-shadow: 0 0 0 8px rgba(237, 188, 200, 0); }
 }
 
 /* ===== 打卡表单 ===== */
@@ -433,7 +434,7 @@ body {
     position: relative;
     width: 100%;
     padding: 14px 24px;
-    background: linear-gradient(135deg, var(--primary-color) 0%, #FF6B7A 100%);
+    background: linear-gradient(135deg, var(--secondary-color) 0%, #6B9E98 100%);
     color: white;
     border: none;
     border-radius: var(--radius);
@@ -442,6 +443,7 @@ body {
     cursor: pointer;
     overflow: hidden;
     transition: transform 0.2s, box-shadow 0.2s, filter 0.2s;
+    box-shadow: 0 4px 16px rgba(127, 174, 168, 0.3);
 }
 
 .btn-primary::after {
@@ -505,7 +507,7 @@ body {
 .poster-card {
     width: 280px;
     padding: 24px;
-    background: linear-gradient(135deg, #FFE4E7 0%, #FFF 50%, #E8F5E9 100%);
+    background: linear-gradient(135deg, var(--primary-light) 0%, var(--card-bg) 50%, var(--primary-light) 100%);
     border-radius: var(--radius);
     box-shadow: var(--shadow);
     text-align: center;
@@ -856,7 +858,7 @@ body {
     right: 0;
     max-width: 430px;
     margin: 0 auto;
-    background: var(--card-bg);
+    background: var(--accent-color);
     display: flex;
     justify-content: space-around;
     padding: 8px 0;
@@ -999,7 +1001,7 @@ body {
 }
 
 .confirm-btn.confirm {
-    background: linear-gradient(135deg, var(--primary-color) 0%, #FF6B7A 100%);
+    background: linear-gradient(135deg, var(--secondary-color) 0%, #6B9E98 100%);
     color: white;
 }
 
