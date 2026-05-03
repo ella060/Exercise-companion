@@ -160,20 +160,11 @@ function renderVideoList() {
         return;
     }
 
-    const categoryNames = {
-        dancing: '广场舞',
-        yoga: '瑜伽',
-        taiji: '太极',
-        stretching: '拉伸',
-        walking: '散步',
-        other: '其他'
-    };
-
     container.innerHTML = videos.map(video => `
         <div class="video-card">
             <div class="video-info">
                 <div class="video-title">${escapeHtml(video.title)}</div>
-                <div class="video-meta">${categoryNames[video.category] || '其他'} · ${formatDate(video.createdAt)}</div>
+                <div class="video-meta">${exerciseTypeNames[video.category] || '其他'} · ${formatDate(video.createdAt)}</div>
             </div>
             <div class="video-actions">
                 <button class="btn-play" onclick="playVideo('${escapeHtml(video.url)}')">播放</button>
@@ -289,7 +280,7 @@ function showCelebration() {
     container.className = 'confetti-container';
     document.body.appendChild(container);
 
-    const colors = ['#FF8C9A', '#6ECFB7', '#FFB347', '#FFE4E7', '#A8E6CF', '#E3F2FD'];
+    const colors = ['#EDBCC8', '#A8D5BA', '#F0C8A0', '#D4C5E2', '#7FAEA8', '#F5E2D1', '#FFF8F2', '#FFE4E7'];
     for (let i = 0; i < 60; i++) {
         const confetti = document.createElement('div');
         confetti.className = 'confetti';
@@ -364,20 +355,11 @@ function updatePosterDate() {
 }
 
 function updatePosterData(checkin) {
-    const typeNames = {
-        walking: '散步',
-        dancing: '广场舞',
-        yoga: '瑜伽',
-        taiji: '太极',
-        stretching: '拉伸',
-        other: '其他'
-    };
-
     // 获取连续天数
     const stats = getStorage(STORAGE_KEYS.STATS);
     document.getElementById('poster-days').textContent = stats.streak || 1;
     document.getElementById('poster-minutes').textContent = checkin.minutes;
-    document.getElementById('poster-type').textContent = typeNames[checkin.type] || '运动';
+    document.getElementById('poster-type').textContent = exerciseTypeNames[checkin.type] || '运动';
 }
 
 function refreshPoster() {
@@ -502,34 +484,82 @@ function renderMedicalList() {
 }
 
 // ===== 关怀消息 =====
-const caringMessages = [
-    '今天天气不错，适当活动一下对身体好哦~',
-    '早上起来伸个懒腰，一天都有精神！',
-    '记得多喝水，运动后要补充水分哦',
-    '今天你已经很棒了，休息一下也没关系的',
-    '坚持就是胜利，每天进步一点点！',
-    '运动时注意安全，慢慢来不要着急',
-    '听说今天是个好日子，适合出去走走~',
-    '别忘了今天的运动计划哦，完成后会很开心的！',
-    '您辛苦啦，今天也要好好爱自己',
-    '天气转凉了，记得添件衣服再出去运动'
-];
+const caringMessages = {
+    morning: [
+        '早上好！伸个懒腰，新的一天充满活力~',
+        '清晨的阳光正好，适合活动筋骨哦',
+        '一日之计在于晨，今天也要元气满满！',
+        '起床喝杯温水，让身体慢慢苏醒吧',
+        '早上的空气最清新，散散步对身体好~'
+    ],
+    noon: [
+        '中午好，饭后百步走，活到九十九~',
+        '午休一下再运动，身体会更舒服哦',
+        '阳光暖暖的，适合在树荫下做做操',
+        '记得午餐营养均衡，为运动补充能量'
+    ],
+    afternoon: [
+        '下午茶时间到，活动活动更精神！',
+        '趁太阳还没落山，出去走走吧',
+        '今天辛苦了，记得给自己一点奖励',
+        '做几个深呼吸，让身心都放松下来'
+    ],
+    evening: [
+        '晚上好，轻柔的拉伸有助于睡眠~',
+        '夜深了，泡个脚再休息吧',
+        '回顾今天，你比自己想象的更棒！',
+        '睡前做几个深呼吸，安稳入眠'
+    ],
+    general: [
+        '运动不是任务，是给自己的温柔礼物',
+        '慢慢来，每一步都算数，你做得很好',
+        '今天天气不错，适当活动一下对身体好哦~',
+        '记得多喝水，运动后要补充水分哦',
+        '今天你已经很棒了，休息一下也没关系的',
+        '坚持就是胜利，每天进步一点点！',
+        '运动时注意安全，慢慢来不要着急',
+        '您辛苦啦，今天也要好好爱自己',
+        '天气转凉了，记得添件衣服再出去运动',
+        '您不孤单，我们一直在身边陪伴您'
+    ]
+};
+
+// 运动类型图标映射
+const exerciseIcons = {
+    walking: '🚶',
+    dancing: '💃',
+    yoga: '🧘',
+    taiji: '☯️',
+    stretching: '🤸',
+    other: '💪'
+};
+
+const exerciseTypeNames = {
+    walking: '散步',
+    dancing: '广场舞',
+    yoga: '瑜伽',
+    taiji: '太极',
+    stretching: '拉伸',
+    other: '其他'
+};
 
 function loadCaringMessage() {
-    // 根据时间生成不同消息
     const hour = new Date().getHours();
-    let message = caringMessages[Math.floor(Math.random() * caringMessages.length)];
+    let pool;
 
-    if (hour < 9) {
-        message = '早上好！新的一天开始啦，今天也要加油哦~';
-    } else if (hour >= 12 && hour < 14) {
-        message = '中午好，饭后散散步有助于消化~';
-    } else if (hour >= 18 && hour < 20) {
-        message = '晚上好，适当的夜练可以助眠哦~';
-    } else if (hour >= 22) {
-        message = '夜深了，早点休息，明天继续加油！';
+    if (hour >= 5 && hour < 10) {
+        pool = caringMessages.morning;
+    } else if (hour >= 10 && hour < 14) {
+        pool = caringMessages.noon;
+    } else if (hour >= 14 && hour < 18) {
+        pool = caringMessages.afternoon;
+    } else if (hour >= 18 && hour < 22) {
+        pool = caringMessages.evening;
+    } else {
+        pool = caringMessages.evening;
     }
 
+    const message = pool[Math.floor(Math.random() * pool.length)];
     document.querySelector('.caring-message p').textContent = message;
 }
 
