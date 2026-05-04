@@ -1,6 +1,6 @@
-// 中老年运动陪伴 App - JavaScript
+// 运动陪伴 — JavaScript
 
-// ===== 数据存储键名 =====
+// ===== 存储键 =====
 const STORAGE_KEYS = {
     VIDEOS: 'fitness_videos',
     CHECKINS: 'fitness_checkins',
@@ -8,25 +8,31 @@ const STORAGE_KEYS = {
     STATS: 'fitness_stats'
 };
 
-// ===== 当前状态 =====
+// ===== 状态 =====
 let currentMonth = new Date().getMonth();
 let currentYear = new Date().getFullYear();
 let posterStyle = 0;
+let previousPage = 'home';
+let currentPage = 'home';
+
+// ===== 运动类型 =====
+const exerciseTypeNames = {
+    walking: '散步',
+    dancing: '广场舞',
+    yoga: '瑜伽',
+    taiji: '太极',
+    stretching: '拉伸',
+    other: '其他'
+};
 
 // ===== 初始化 =====
 document.addEventListener('DOMContentLoaded', function() {
-    // 显示当前日期
     updateTodayDate();
-    // 加载数据
     loadAllData();
-    // 渲染日历
     renderCalendar();
-    // 渲染海报日期
     updatePosterDate();
-    // 设置底部导航
     initNavigation();
-    // 加载关怀消息
-    loadCaringMessage();
+    updateCaringMessage();
 });
 
 // ===== 日期显示 =====
@@ -36,39 +42,34 @@ function updateTodayDate() {
     document.getElementById('today-date').textContent = now.toLocaleDateString('zh-CN', options);
 }
 
-// ===== 导航切换 =====
-let previousPage = 'home';
-let currentPage = 'home';
-
+// ===== 导航 =====
 function switchPage(pageId) {
     if (pageId === currentPage) return;
 
     const currentPageEl = document.querySelector('.page.active');
     const nextPageEl = document.getElementById('page-' + pageId);
-
     if (!nextPageEl || !currentPageEl) return;
 
-    const pageOrder = ['home', 'video', 'checkin', 'poster', 'medical'];
+    const pageOrder = ['home', 'video', 'checkin', 'poster', 'medical', 'profile'];
     const currentIndex = pageOrder.indexOf(currentPage);
     const nextIndex = pageOrder.indexOf(pageId);
     const direction = nextIndex > currentIndex ? 'left' : 'right';
 
     currentPageEl.classList.remove('active');
     currentPageEl.classList.add('slide-out-' + direction);
-
     nextPageEl.classList.add('active');
     nextPageEl.classList.add('slide-in-' + direction);
 
-    setTimeout(() => {
+    setTimeout(function() {
         currentPageEl.classList.remove('slide-out-left', 'slide-out-right');
         nextPageEl.classList.remove('slide-in-left', 'slide-in-right');
     }, 350);
 
-    document.querySelectorAll('.nav-item').forEach(item => {
+    document.querySelectorAll('.nav-item').forEach(function(item) {
         item.classList.remove('active');
         item.setAttribute('aria-selected', 'false');
     });
-    const targetNav = document.querySelector(`.nav-item[data-page="${pageId}"]`);
+    var targetNav = document.querySelector('.nav-item[data-page="' + pageId + '"]');
     if (targetNav) {
         targetNav.classList.add('active');
         targetNav.setAttribute('aria-selected', 'true');
@@ -79,10 +80,9 @@ function switchPage(pageId) {
 }
 
 function initNavigation() {
-    document.querySelectorAll('.nav-item').forEach(item => {
+    document.querySelectorAll('.nav-item').forEach(function(item) {
         item.addEventListener('click', function() {
-            const page = this.getAttribute('data-page');
-            switchPage(page);
+            switchPage(this.getAttribute('data-page'));
         });
     });
 }
@@ -91,164 +91,159 @@ function initNavigation() {
 function showAddVideoModal() {
     document.getElementById('add-video-modal').classList.add('active');
 }
-
 function hideAddVideoModal() {
     document.getElementById('add-video-modal').classList.remove('active');
-    // 清空表单
     document.getElementById('video-url').value = '';
     document.getElementById('video-title').value = '';
 }
 
 function addVideo() {
-    const url = document.getElementById('video-url').value.trim();
-    const title = document.getElementById('video-title').value.trim() || '未命名视频';
-    const category = document.getElementById('video-category').value;
+    var url = document.getElementById('video-url').value.trim();
+    var title = document.getElementById('video-title').value.trim() || '未命名视频';
+    var category = document.getElementById('video-category').value;
 
     if (!url) {
-        showToast('请输入视频链接');
+        showToast('请填写视频链接');
         return;
     }
 
-    const videos = getStorage(STORAGE_KEYS.VIDEOS);
-    const video = {
+    var videos = getStorage(STORAGE_KEYS.VIDEOS);
+    videos.push({
         id: Date.now(),
         url: url,
         title: title,
         category: category,
         createdAt: new Date().toISOString()
-    };
-
-    videos.push(video);
+    });
     setStorage(STORAGE_KEYS.VIDEOS, videos);
 
     hideAddVideoModal();
     renderVideoList();
-    showToast('视频添加成功');
+    showToast('已收藏', 'success');
 }
 
 function deleteVideo(id) {
     showConfirmDialog({
-        title: '删除视频',
-        message: '确定要删除这个视频吗？删除后可在视频库重新添加。',
-        confirmText: '删除',
+        title: '移除视频',
+        message: '这个视频会被移出收藏哦，以后也可以重新添加。',
+        confirmText: '移除',
         cancelText: '保留',
-        isDangerous: true,
-        onConfirm: () => {
-            let videos = getStorage(STORAGE_KEYS.VIDEOS);
-            videos = videos.filter(v => v.id !== id);
+        onConfirm: function() {
+            var videos = getStorage(STORAGE_KEYS.VIDEOS);
+            videos = videos.filter(function(v) { return v.id !== id; });
             setStorage(STORAGE_KEYS.VIDEOS, videos);
             renderVideoList();
-            showToast('已删除', 'success');
+            showToast('已移除', 'success');
         }
     });
 }
 
 function playVideo(url) {
-    // 尝试在App内打开（如果是支持的平台）
     window.open(url, '_blank');
 }
 
 function renderVideoList() {
-    const videos = getStorage(STORAGE_KEYS.VIDEOS);
-    const container = document.getElementById('video-list');
+    var videos = getStorage(STORAGE_KEYS.VIDEOS);
+    var container = document.getElementById('video-list');
 
     if (videos.length === 0) {
-        container.innerHTML = `
-            <div class="empty-state">
-                <div class="empty-state-icon">📺</div>
-                <h3>还没有收藏的视频</h3>
-                <p>点击上方"+ 添加视频"粘贴链接<br>开始管理您的健身视频</p>
-                <div class="guide-text">📌 提示：支持抖音、B站等平台的视频链接</div>
-            </div>
-        `;
+        container.innerHTML =
+            '<div class="empty-state">' +
+                '<div class="empty-state-mark">+</div>' +
+                '<h3>还没有收藏的视频</h3>' +
+                '<p>把喜欢的健身视频收藏到这里，随时都能找到</p>' +
+                '<span class="hint-text">支持抖音、B站等平台的视频链接</span>' +
+            '</div>';
         return;
     }
 
-    container.innerHTML = videos.map(video => `
-        <div class="video-card">
-            <div class="video-info">
-                <div class="video-title">${escapeHtml(video.title)}</div>
-                <div class="video-meta">${exerciseTypeNames[video.category] || '其他'} · ${formatDate(video.createdAt)}</div>
-            </div>
-            <div class="video-actions">
-                <button class="btn-play" onclick="playVideo('${escapeHtml(video.url)}')">播放</button>
-                <button class="btn-delete" onclick="deleteVideo(${video.id})">删除</button>
-            </div>
-        </div>
-    `).join('');
+    container.innerHTML = videos.map(function(video) {
+        return (
+            '<div class="video-item">' +
+                '<div class="video-item-info">' +
+                    '<div class="video-item-title">' + escapeHtml(video.title) + '</div>' +
+                    '<div class="video-item-meta">' + (exerciseTypeNames[video.category] || '其他') + ' · ' + formatDate(video.createdAt) + '</div>' +
+                '</div>' +
+                '<div class="video-item-actions">' +
+                    '<button class="btn-icon play" onclick="playVideo(\'' + escapeHtml(video.url) + '\')">播放</button>' +
+                    '<button class="btn-icon delete" onclick="deleteVideo(' + video.id + ')">移除</button>' +
+                '</div>' +
+            '</div>'
+        );
+    }).join('');
 }
 
 // ===== 打卡日历 =====
 function changeMonth(delta) {
     currentMonth += delta;
-    if (currentMonth > 11) {
-        currentMonth = 0;
-        currentYear++;
-    } else if (currentMonth < 0) {
-        currentMonth = 11;
-        currentYear--;
-    }
+    if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+    else if (currentMonth < 0) { currentMonth = 11; currentYear--; }
     renderCalendar();
 }
 
 function renderCalendar() {
-    const monthNames = ['一月', '二月', '三月', '四月', '五月', '六月',
-                        '七月', '八月', '九月', '十月', '十一月', '十二月'];
-    document.getElementById('calendar-month').textContent = `${currentYear}年${monthNames[currentMonth]}`;
+    var monthNames = ['一月', '二月', '三月', '四月', '五月', '六月',
+                      '七月', '八月', '九月', '十月', '十一月', '十二月'];
+    document.getElementById('calendar-month').textContent = currentYear + '年' + monthNames[currentMonth];
 
-    const grid = document.getElementById('calendar-grid');
-    const checkins = getStorage(STORAGE_KEYS.CHECKINS);
-    const checkedDays = checkins.map(c => c.date);
+    var grid = document.getElementById('calendar-grid');
+    var checkins = getStorage(STORAGE_KEYS.CHECKINS);
+    var checkedDays = checkins.map(function(c) { return c.date; });
 
-    // 获取本月第一天和最后一天
-    const firstDay = new Date(currentYear, currentMonth, 1);
-    const lastDay = new Date(currentYear, currentMonth + 1, 0);
-    const startWeekDay = firstDay.getDay();
+    var firstDay = new Date(currentYear, currentMonth, 1);
+    var lastDay = new Date(currentYear, currentMonth + 1, 0);
+    var startWeekDay = firstDay.getDay();
 
-    // 获取今天的日期用于比较
-    const today = new Date();
-    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    var today = new Date();
+    var todayStr = today.getFullYear() + '-' +
+        String(today.getMonth() + 1).padStart(2, '0') + '-' +
+        String(today.getDate()).padStart(2, '0');
 
-    let html = '<div class="day-header">日</div><div class="day-header">一</div><div class="day-header">二</div><div class="day-header">三</div><div class="day-header">四</div><div class="day-header">五</div><div class="day-header">六</div>';
+    var html = '<div class="day-header">日</div><div class="day-header">一</div><div class="day-header">二</div><div class="day-header">三</div><div class="day-header">四</div><div class="day-header">五</div><div class="day-header">六</div>';
 
-    // 填充空白
-    for (let i = 0; i < startWeekDay; i++) {
+    for (var i = 0; i < startWeekDay; i++) {
         html += '<div class="day"></div>';
     }
 
-    // 填充日期
-    for (let day = 1; day <= lastDay.getDate(); day++) {
-        const dayStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        const isChecked = checkedDays.includes(dayStr);
-        const isToday = dayStr === todayStr;
+    for (var day = 1; day <= lastDay.getDate(); day++) {
+        var dayStr = currentYear + '-' +
+            String(currentMonth + 1).padStart(2, '0') + '-' +
+            String(day).padStart(2, '0');
+        var isChecked = checkedDays.indexOf(dayStr) !== -1;
+        var isToday = dayStr === todayStr;
 
-        let classes = 'day';
+        var classes = 'day';
         if (isChecked) classes += ' checked';
         if (isToday) classes += ' today';
 
-        html += `<div class="${classes}" data-date="${dayStr}">${day}</div>`;
+        html += '<div class="' + classes + '" data-date="' + dayStr + '">' + day + '</div>';
     }
 
     grid.innerHTML = html;
 }
 
 function submitCheckin() {
-    const minutes = document.getElementById('exercise-minutes').value;
-    const type = document.getElementById('exercise-type').value;
-    const note = document.getElementById('exercise-note').value;
+    var minutes = document.getElementById('exercise-minutes').value;
+    var type = document.getElementById('exercise-type').value;
+    var note = document.getElementById('exercise-note').value;
 
     if (!minutes || parseInt(minutes) <= 0) {
-        showToast('请输入有效的运动时长', 'warning');
+        showToast('请填写运动时长', 'warning');
         return;
     }
 
-    const today = new Date();
-    const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    var today = new Date();
+    var dateStr = today.getFullYear() + '-' +
+        String(today.getMonth() + 1).padStart(2, '0') + '-' +
+        String(today.getDate()).padStart(2, '0');
 
-    const checkins = getStorage(STORAGE_KEYS.CHECKINS);
-    const existingIndex = checkins.findIndex(c => c.date === dateStr);
+    var checkins = getStorage(STORAGE_KEYS.CHECKINS);
+    var existingIndex = -1;
+    for (var i = 0; i < checkins.length; i++) {
+        if (checkins[i].date === dateStr) { existingIndex = i; break; }
+    }
 
-    const checkin = {
+    var checkin = {
         date: dateStr,
         minutes: parseInt(minutes),
         type: type,
@@ -271,55 +266,55 @@ function submitCheckin() {
 
     renderCalendar();
     showCelebration();
-    setTimeout(() => switchPage('poster'), 1500);
+    setTimeout(function() { switchPage('poster'); }, 1500);
 }
 
 function showCelebration() {
-    const overlay = document.createElement('div');
-    overlay.className = 'check-success-overlay show';
-    overlay.innerHTML = '<div class="check-success-icon">🎉</div>';
+    var overlay = document.createElement('div');
+    overlay.className = 'check-success show';
+    overlay.innerHTML = '<div class="check-success-circle"><div class="check-success-mark"></div></div>';
     document.body.appendChild(overlay);
 
-    const container = document.createElement('div');
+    var container = document.createElement('div');
     container.className = 'confetti-container';
     document.body.appendChild(container);
 
-    const colors = ['#EDBCC8', '#A8D5BA', '#F0C8A0', '#D4C5E2', '#7FAEA8', '#F5E2D1', '#FFF8F2', '#FFE4E7'];
-    for (let i = 0; i < 60; i++) {
-        const confetti = document.createElement('div');
+    var colors = ['#C28B6E', '#F0E3D8', '#8FAF92', '#F6EDE6', '#E8F0E6', '#F3EDE4', '#EBD5C5', '#C49F7A'];
+    for (var i = 0; i < 50; i++) {
+        var confetti = document.createElement('div');
         confetti.className = 'confetti';
         confetti.style.left = Math.random() * 100 + '%';
         confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
-        confetti.style.animationDelay = Math.random() * 0.4 + 's';
-        confetti.style.animationDuration = (1.5 + Math.random()) + 's';
+        confetti.style.animationDelay = Math.random() * 0.3 + 's';
+        confetti.style.animationDuration = (1.5 + Math.random() * 0.8) + 's';
         confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
-        confetti.style.width = (8 + Math.random() * 8) + 'px';
-        confetti.style.height = (8 + Math.random() * 8) + 'px';
+        confetti.style.width = (6 + Math.random() * 8) + 'px';
+        confetti.style.height = (6 + Math.random() * 8) + 'px';
         container.appendChild(confetti);
     }
 
-    setTimeout(() => {
+    setTimeout(function() {
         overlay.classList.remove('show');
-        setTimeout(() => overlay.remove(), 300);
+        setTimeout(function() { overlay.remove(); }, 300);
         container.remove();
-    }, 2200);
+    }, 2000);
 }
 
 function updateStats() {
-    const checkins = getStorage(STORAGE_KEYS.CHECKINS);
+    var checkins = getStorage(STORAGE_KEYS.CHECKINS);
 
-    // 计算连续天数
-    let streak = 0;
-    const today = new Date();
-    const sortedCheckins = [...checkins].sort((a, b) => new Date(b.date) - new Date(a.date));
+    var streak = 0;
+    var today = new Date();
+    var sortedCheckins = checkins.slice().sort(function(a, b) {
+        return new Date(b.date) - new Date(a.date);
+    });
 
-    for (let i = 0; i < sortedCheckins.length; i++) {
-        const checkDate = new Date(sortedCheckins[i].date);
-        const expectedDate = new Date(today);
+    for (var i = 0; i < sortedCheckins.length; i++) {
+        var checkDate = new Date(sortedCheckins[i].date);
+        var expectedDate = new Date(today);
         expectedDate.setDate(expectedDate.getDate() - i);
         expectedDate.setHours(0, 0, 0, 0);
         checkDate.setHours(0, 0, 0, 0);
-
         if (checkDate.getTime() === expectedDate.getTime()) {
             streak++;
         } else {
@@ -327,15 +322,28 @@ function updateStats() {
         }
     }
 
-    // 计算总分钟数
-    const totalMinutes = checkins.reduce((sum, c) => sum + (c.minutes || 0), 0);
+    var totalMinutes = checkins.reduce(function(sum, c) {
+        return sum + (c.minutes || 0);
+    }, 0);
 
-    setStorage(STORAGE_KEYS.STATS, { streak, totalMinutes });
+    setStorage(STORAGE_KEYS.STATS, { streak: streak, totalMinutes: totalMinutes });
 
-    // 更新UI
-    document.getElementById('total-days').textContent = streak;
-    document.getElementById('total-minutes').textContent = totalMinutes;
-    document.getElementById('profile-days').textContent = streak;
+    var daysEl = document.getElementById('total-days');
+    var minsEl = document.getElementById('total-minutes');
+    if (daysEl) daysEl.textContent = streak;
+    if (minsEl) minsEl.textContent = totalMinutes;
+
+    var profDaysEl = document.getElementById('profile-days');
+    if (profDaysEl) profDaysEl.textContent = streak;
+
+    // 连续天数 >0 时加高亮样式
+    if (daysEl) {
+        if (streak > 0) {
+            daysEl.classList.add('has-streak');
+        } else {
+            daysEl.classList.remove('has-streak');
+        }
+    }
 }
 
 function loadAllData() {
@@ -345,22 +353,53 @@ function loadAllData() {
 }
 
 // ===== 海报 =====
-const posterTemplates = [
-    { bg: 'linear-gradient(135deg, #FFE4E7 0%, #FFF 50%, #E8F5E9 100%)' },
-    { bg: 'linear-gradient(135deg, #E8F5E9 0%, #FFF 50%, #FFE4E7 100%)' },
-    { bg: 'linear-gradient(135deg, #E3F2FD 0%, #FFF 50%, #FCE4EC 100%)' },
-    { bg: 'linear-gradient(135deg, #FFF3E0 0%, #FFF 50%, #E8F5E9 100%)' }
+var posterTemplates = [
+    {
+        bg:          '#FDFCF8',
+        accent:      '#C28B6E',
+        accentSoft:  '#F0E3D8',
+        border:      '#E6E1DA',
+        numberColor: '#C28B6E',
+        textColor:   '#3C3732',
+        labelColor:  '#999490'
+    },
+    {
+        bg:          '#F9F6F1',
+        accent:      '#8FAF92',
+        accentSoft:  '#E8F0E6',
+        border:      '#D5DDD3',
+        numberColor: '#8FAF92',
+        textColor:   '#3C3732',
+        labelColor:  '#999490'
+    },
+    {
+        bg:          '#F3EDE4',
+        accent:      '#C49F7A',
+        accentSoft:  '#F6EDE6',
+        border:      '#E6DDD2',
+        numberColor: '#C49F7A',
+        textColor:   '#3C3732',
+        labelColor:  '#999490'
+    },
+    {
+        bg:          '#FDFCF8',
+        accent:      '#B8987A',
+        accentSoft:  '#F3EDE4',
+        border:      '#EBE5DC',
+        numberColor: '#B8987A',
+        textColor:   '#3C3732',
+        labelColor:  '#999490'
+    }
 ];
 
 function updatePosterDate() {
-    const now = new Date();
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    var now = new Date();
+    var options = { year: 'numeric', month: 'long', day: 'numeric' };
     document.getElementById('poster-date').textContent = now.toLocaleDateString('zh-CN', options);
 }
 
 function updatePosterData(checkin) {
-    // 获取连续天数
-    const stats = getStorage(STORAGE_KEYS.STATS);
+    var stats = getStorage(STORAGE_KEYS.STATS);
     document.getElementById('poster-days').textContent = stats.streak || 1;
     document.getElementById('poster-minutes').textContent = checkin.minutes;
     document.getElementById('poster-type').textContent = exerciseTypeNames[checkin.type] || '运动';
@@ -368,52 +407,53 @@ function updatePosterData(checkin) {
 
 function refreshPoster() {
     posterStyle = (posterStyle + 1) % posterTemplates.length;
-    const card = document.getElementById('poster-card');
-    card.style.background = posterTemplates[posterStyle].bg;
+    var t = posterTemplates[posterStyle];
+    var card = document.getElementById('poster-card');
+    card.style.background = t.bg;
+    card.style.borderColor = t.border;
+
+    // 更新内部颜色
+    var number = card.querySelector('.poster-number');
+    var badge = card.querySelector('.poster-badge');
+    var detailRow = card.querySelector('.poster-detail-row');
+    var footnote = card.querySelector('.poster-footnote');
+
+    if (number) number.style.color = t.numberColor;
+    if (badge) badge.style.borderColor = t.border;
+    if (detailRow) detailRow.style.background = t.accentSoft;
+    if (footnote) footnote.style.borderColor = t.border;
 }
 
 function sharePoster() {
-    // 由于浏览器限制，我们创建一个画布图片并下载
-    showToast('正在生成分享图片...');
-
-    // 使用html2canvas方式生成（这里简化为提示）
-    // 实际项目中可以引入 html2canvas 库
-
-    // 模拟下载
-    setTimeout(() => {
-        showToast('长按海报保存图片后分享');
-    }, 500);
+    showToast('长按海报保存图片后分享');
 }
 
 // ===== 就医记录 =====
 function showAddMedicalModal() {
     document.getElementById('add-medical-modal').classList.add('active');
-    // 设置默认日期为明天
-    const tomorrow = new Date();
+    var tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     document.getElementById('medical-date').value = tomorrow.toISOString().split('T')[0];
 }
-
 function hideAddMedicalModal() {
     document.getElementById('add-medical-modal').classList.remove('active');
-    // 清空表单
     document.getElementById('medical-hospital').value = '';
     document.getElementById('medical-department').value = '';
     document.getElementById('medical-note').value = '';
 }
 
 function addMedical() {
-    const date = document.getElementById('medical-date').value;
-    const hospital = document.getElementById('medical-hospital').value.trim();
-    const department = document.getElementById('medical-department').value.trim();
-    const note = document.getElementById('medical-note').value.trim();
+    var date = document.getElementById('medical-date').value;
+    var hospital = document.getElementById('medical-hospital').value.trim();
+    var department = document.getElementById('medical-department').value.trim();
+    var note = document.getElementById('medical-note').value.trim();
 
     if (!date || !hospital) {
         showToast('请填写日期和医院名称');
         return;
     }
 
-    const medicals = getStorage(STORAGE_KEYS.MEDICALS);
+    var medicals = getStorage(STORAGE_KEYS.MEDICALS);
     medicals.push({
         id: Date.now(),
         date: date,
@@ -427,153 +467,147 @@ function addMedical() {
     setStorage(STORAGE_KEYS.MEDICALS, medicals);
     hideAddMedicalModal();
     renderMedicalList();
-    showToast('就医记录已添加');
+    showToast('已添加提醒', 'success');
 }
 
 function deleteMedical(id) {
     showConfirmDialog({
-        title: '删除记录',
-        message: '确定要删除这条就医记录吗？',
-        confirmText: '删除',
+        title: '移除记录',
+        message: '这条就医提醒会被移除哦。',
+        confirmText: '移除',
         cancelText: '保留',
-        isDangerous: true,
-        onConfirm: () => {
-            let medicals = getStorage(STORAGE_KEYS.MEDICALS);
-            medicals = medicals.filter(m => m.id !== id);
+        onConfirm: function() {
+            var medicals = getStorage(STORAGE_KEYS.MEDICALS);
+            medicals = medicals.filter(function(m) { return m.id !== id; });
             setStorage(STORAGE_KEYS.MEDICALS, medicals);
             renderMedicalList();
-            showToast('已删除', 'success');
+            showToast('已移除', 'success');
         }
     });
 }
 
 function toggleMedicalDone(id) {
-    let medicals = getStorage(STORAGE_KEYS.MEDICALS);
-    const index = medicals.findIndex(m => m.id === id);
-    if (index >= 0) {
-        medicals[index].done = !medicals[index].done;
-        setStorage(STORAGE_KEYS.MEDICALS, medicals);
-        renderMedicalList();
+    var medicals = getStorage(STORAGE_KEYS.MEDICALS);
+    for (var i = 0; i < medicals.length; i++) {
+        if (medicals[i].id === id) {
+            medicals[i].done = !medicals[i].done;
+            break;
+        }
     }
+    setStorage(STORAGE_KEYS.MEDICALS, medicals);
+    renderMedicalList();
 }
 
 function renderMedicalList() {
-    const medicals = getStorage(STORAGE_KEYS.MEDICALS);
-    const container = document.getElementById('medical-list');
+    var medicals = getStorage(STORAGE_KEYS.MEDICALS);
+    var container = document.getElementById('medical-list');
 
     if (medicals.length === 0) {
-        container.innerHTML = `
-            <div class="empty-state">
-                <div class="empty-state-icon">🏥</div>
-                <h3>还没有就医记录</h3>
-                <p>点击上方"+ 添加记录"<br>为您的健康保驾护航</p>
-                <div class="guide-text">📌 建议：添加定期复查提醒</div>
-            </div>
-        `;
+        container.innerHTML =
+            '<div class="empty-state">' +
+                '<div class="empty-state-mark">+</div>' +
+                '<h3>暂无就医提醒</h3>' +
+                '<p>添加复查和就医安排，这里帮你记着</p>' +
+                '<span class="hint-text">定期复查是对自己最好的关心</span>' +
+            '</div>';
         return;
     }
 
-    // 按日期排序
-    const sortedMedicals = [...medicals].sort((a, b) => new Date(a.date) - new Date(b.date));
+    var sortedMedicals = medicals.slice().sort(function(a, b) {
+        return new Date(a.date) - new Date(b.date);
+    });
 
-    container.innerHTML = sortedMedicals.map(m => `
-        <div class="medical-card ${m.done ? 'done' : ''}" onclick="toggleMedicalDone(${m.id})">
-            <div class="medical-date">${formatDate(m.date)}</div>
-            <div class="medical-hospital">${escapeHtml(m.hospital)}</div>
-            <div class="medical-department">${escapeHtml(m.department)}</div>
-            ${m.note ? `<div class="medical-note">备注：${escapeHtml(m.note)}</div>` : ''}
-            <button class="btn-delete" style="margin-top:8px" onclick="event.stopPropagation();deleteMedical(${m.id})">删除</button>
-        </div>
-    `).join('');
+    container.innerHTML = sortedMedicals.map(function(m) {
+        return (
+            '<div class="medical-item' + (m.done ? ' done' : '') + '" onclick="toggleMedicalDone(' + m.id + ')">' +
+                '<div class="medical-item-date">' + formatDate(m.date) + '</div>' +
+                '<div class="medical-item-header">' +
+                    '<span class="medical-item-hospital">' + escapeHtml(m.hospital) + '</span>' +
+                    (m.department ? '<span class="medical-item-dept">' + escapeHtml(m.department) + '</span>' : '') +
+                '</div>' +
+                (m.note ? '<div class="medical-item-note">' + escapeHtml(m.note) + '</div>' : '') +
+                '<button class="btn-icon delete" onclick="event.stopPropagation();deleteMedical(' + m.id + ')" style="margin-top:8px">移除</button>' +
+            '</div>'
+        );
+    }).join('');
 }
 
 // ===== 关怀消息 =====
-const caringMessages = {
+var caringMessages = {
+    early: [
+        '天刚亮不久，先喝杯温水再开始新的一天。',
+        '清晨的空气最好，窗边站一会儿就很舒服。',
+        '早上好，伸个懒腰，让身体慢慢醒过来。',
+        '你醒得真早，今天也会是很好的一天。'
+    ],
     morning: [
-        '早上好！伸个懒腰，新的一天充满活力~',
-        '清晨的阳光正好，适合活动筋骨哦',
-        '一日之计在于晨，今天也要元气满满！',
-        '起床喝杯温水，让身体慢慢苏醒吧',
-        '早上的空气最清新，散散步对身体好~'
+        '阳光正好，适合在客厅里慢慢活动一下。',
+        '今天天气不错，出去走走会很舒服。',
+        '做几个深呼吸吧，让新鲜空气充满身体。',
+        '早上的光最温柔，照在身上暖暖的。'
     ],
     noon: [
-        '中午好，饭后百步走，活到九十九~',
-        '午休一下再运动，身体会更舒服哦',
-        '阳光暖暖的，适合在树荫下做做操',
-        '记得午餐营养均衡，为运动补充能量'
+        '中午好，吃过饭散散步，帮助消化。',
+        '午休一小会儿再运动，身体会更舒服。',
+        '阳光暖暖的，靠在沙发上歇一歇也很好。'
     ],
     afternoon: [
-        '下午茶时间到，活动活动更精神！',
-        '趁太阳还没落山，出去走走吧',
-        '今天辛苦了，记得给自己一点奖励',
-        '做几个深呼吸，让身心都放松下来'
+        '下午茶时间，喝口水、活动活动，精神更好。',
+        '趁天还亮着，做些轻柔的拉伸吧。',
+        '今天辛苦了，记得给自己一点小小的奖励。',
+        '坐下来，做几个深呼吸，让身体放松下来。'
     ],
     evening: [
-        '晚上好，轻柔的拉伸有助于睡眠~',
-        '夜深了，泡个脚再休息吧',
-        '回顾今天，你比自己想象的更棒！',
-        '睡前做几个深呼吸，安稳入眠'
+        '晚上好，轻柔地拉伸一下，睡得会更香。',
+        '今天你已经做得很好了，休息也是一种练习。',
+        '回顾今天，每一步都走得很稳。',
+        '泡个脚，让身体暖起来，准备休息了。'
     ],
-    general: [
-        '运动不是任务，是给自己的温柔礼物',
-        '慢慢来，每一步都算数，你做得很好',
-        '今天天气不错，适当活动一下对身体好哦~',
-        '记得多喝水，运动后要补充水分哦',
-        '今天你已经很棒了，休息一下也没关系的',
-        '坚持就是胜利，每天进步一点点！',
-        '运动时注意安全，慢慢来不要着急',
-        '您辛苦啦，今天也要好好爱自己',
-        '天气转凉了，记得添件衣服再出去运动',
-        '您不孤单，我们一直在身边陪伴您'
+    night: [
+        '夜深了，早点休息，明天我们还在。',
+        '睡前回想今天一件让你开心的小事。',
+        '晚安，你比自己想象的更了不起。'
     ]
 };
 
-// 运动类型图标映射
-const exerciseIcons = {
-    walking: '🚶',
-    dancing: '💃',
-    yoga: '🧘',
-    taiji: '☯️',
-    stretching: '🤸',
-    other: '💪'
-};
+function updateCaringMessage() {
+    var hour = new Date().getHours();
+    var pool;
 
-const exerciseTypeNames = {
-    walking: '散步',
-    dancing: '广场舞',
-    yoga: '瑜伽',
-    taiji: '太极',
-    stretching: '拉伸',
-    other: '其他'
-};
+    if (hour >= 5 && hour < 9)       pool = caringMessages.early;
+    else if (hour >= 9 && hour < 12)  pool = caringMessages.morning;
+    else if (hour >= 12 && hour < 14) pool = caringMessages.noon;
+    else if (hour >= 14 && hour < 18) pool = caringMessages.afternoon;
+    else if (hour >= 18 && hour < 21) pool = caringMessages.evening;
+    else                              pool = caringMessages.night;
 
-function loadCaringMessage() {
-    const hour = new Date().getHours();
-    let pool;
+    var message = pool[Math.floor(Math.random() * pool.length)];
+    var el = document.getElementById('caring-text');
+    if (el) el.textContent = message;
 
-    if (hour >= 5 && hour < 10) {
-        pool = caringMessages.morning;
-    } else if (hour >= 10 && hour < 14) {
-        pool = caringMessages.noon;
-    } else if (hour >= 14 && hour < 18) {
-        pool = caringMessages.afternoon;
-    } else if (hour >= 18 && hour < 22) {
-        pool = caringMessages.evening;
-    } else {
-        pool = caringMessages.evening;
-    }
+    // 同时更新欢迎语
+    updateWelcomeGreeting(hour);
+}
 
-    const message = pool[Math.floor(Math.random() * pool.length)];
-    document.querySelector('.caring-message p').textContent = message;
+function updateWelcomeGreeting(hour) {
+    var greeting;
+    if (hour >= 5 && hour < 9)       greeting = '早上好，今天也要对自己好一点';
+    else if (hour >= 9 && hour < 12)  greeting = '上午好，慢慢来，不着急';
+    else if (hour >= 12 && hour < 14) greeting = '中午好，记得好好吃饭';
+    else if (hour >= 14 && hour < 18) greeting = '下午好，你今天的坚持很美';
+    else if (hour >= 18 && hour < 21) greeting = '晚上好，今天辛苦了';
+    else                              greeting = '夜深了，早点休息';
+
+    var h1 = document.querySelector('.welcome-section h1');
+    if (h1) h1.textContent = greeting;
 }
 
 // ===== 工具函数 =====
 function getStorage(key) {
     try {
-        const data = localStorage.getItem(key);
+        var data = localStorage.getItem(key);
         return data ? JSON.parse(data) : [];
     } catch (e) {
-        console.error('Storage get error:', e);
         return [];
     }
 }
@@ -581,99 +615,90 @@ function getStorage(key) {
 function setStorage(key, data) {
     try {
         localStorage.setItem(key, JSON.stringify(data));
-    } catch (e) {
-        console.error('Storage set error:', e);
-    }
+    } catch (e) {}
 }
 
 function formatDate(dateStr) {
-    const date = new Date(dateStr);
-    return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
+    var date = new Date(dateStr);
+    return date.getFullYear() + '年' + (date.getMonth() + 1) + '月' + date.getDate() + '日';
 }
 
 function escapeHtml(str) {
     if (!str) return '';
-    const div = document.createElement('div');
+    var div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;
 }
 
-function showToast(message, type = 'info') {
-    const toast = document.getElementById('toast');
-    const icons = {
-        success: '✔',
-        error: '✕',
-        warning: '⚠',
-        info: 'ℹ'
-    };
-
-    toast.innerHTML = `<span class="toast-icon">${icons[type]}</span><span>${message}</span>`;
-    toast.className = `toast toast-${type}`;
-
+// ===== Toast =====
+function showToast(message, type) {
+    type = type || 'info';
+    var toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.className = 'toast toast-' + type;
     void toast.offsetWidth;
-
     toast.classList.add('show');
-    setTimeout(() => {
+    setTimeout(function() {
         toast.classList.remove('show');
-    }, 2800);
+    }, 2500);
 }
 
-// ===== 自定义确认对话框 =====
+// ===== 确认对话框 =====
 function showConfirmDialog(options) {
-    const {
-        title,
-        message,
-        confirmText = '确定',
-        cancelText = '取消',
-        onConfirm,
-        onCancel,
-        isDangerous = false,
-        showCancel = true
-    } = options;
+    var title = options.title;
+    var message = options.message;
+    var confirmText = options.confirmText || '确定';
+    var cancelText = options.cancelText || '取消';
+    var onConfirm = options.onConfirm;
+    var onCancel = options.onCancel;
+    var showCancel = options.showCancel !== false;
 
-    const overlay = document.createElement('div');
+    var overlay = document.createElement('div');
     overlay.className = 'confirm-overlay';
-    overlay.innerHTML = `
-        <div class="confirm-dialog">
-            <div class="confirm-icon">${isDangerous ? '⚠' : '💝'}</div>
-            <div class="confirm-title">${title}</div>
-            <div class="confirm-message">${message}</div>
-            <div class="confirm-actions ${showCancel && cancelText ? '' : 'single-action'}">
-                ${showCancel && cancelText ? `<button class="confirm-btn cancel">${cancelText}</button>` : ''}
-                <button class="confirm-btn confirm">${confirmText}</button>
-            </div>
-        </div>
-    `;
+
+    var actionsClass = 'confirm-actions';
+    if (!showCancel) actionsClass += ' single-action';
+
+    overlay.innerHTML =
+        '<div class="confirm-dialog">' +
+            '<div class="confirm-title">' + title + '</div>' +
+            '<div class="confirm-message">' + message + '</div>' +
+            '<div class="' + actionsClass + '">' +
+                (showCancel ? '<button class="confirm-btn cancel">' + cancelText + '</button>' : '') +
+                '<button class="confirm-btn confirm">' + confirmText + '</button>' +
+            '</div>' +
+        '</div>';
+
     document.body.appendChild(overlay);
 
-    requestAnimationFrame(() => {
+    requestAnimationFrame(function() {
         overlay.classList.add('active');
     });
 
-    const closeDialog = () => {
+    var closeDialog = function() {
         overlay.classList.remove('active');
-        setTimeout(() => overlay.remove(), 300);
+        setTimeout(function() { overlay.remove(); }, 300);
     };
 
-    const cancelBtn = overlay.querySelector('.cancel');
+    var cancelBtn = overlay.querySelector('.cancel');
     if (cancelBtn) {
-        cancelBtn.addEventListener('click', () => {
+        cancelBtn.addEventListener('click', function() {
             closeDialog();
-            onCancel && onCancel();
+            if (onCancel) onCancel();
         });
     }
 
-    overlay.querySelector('.confirm').addEventListener('click', () => {
+    overlay.querySelector('.confirm').addEventListener('click', function() {
         closeDialog();
-        onConfirm && onConfirm();
+        if (onConfirm) onConfirm();
     });
 }
 
-// ===== 关于我们 =====
+// ===== 关于 =====
 function showAbout() {
     showConfirmDialog({
         title: '关于运动陪伴',
-        message: '运动陪伴 v1.0\n\n一款温暖的中老年健身应用\n每天陪伴，温暖健身',
+        message: '运动陪伴 v2.0\n\n每天陪伴，温暖健身\n一个安静的角落，记得你每一天的坚持。',
         confirmText: '知道了',
         cancelText: '',
         showCancel: false
@@ -684,12 +709,11 @@ function showAbout() {
 function clearData() {
     showConfirmDialog({
         title: '清除所有数据',
-        message: '确定要清除所有数据吗？此操作不可恢复，包括所有打卡记录、视频和就医信息。',
+        message: '确定要清除所有数据吗？这个操作不能撤销哦，打卡记录、视频和就医信息都会被清空。',
         confirmText: '确认清除',
-        cancelText: '取消',
-        isDangerous: true,
-        onConfirm: () => {
-            Object.values(STORAGE_KEYS).forEach(key => {
+        cancelText: '再想想',
+        onConfirm: function() {
+            Object.values(STORAGE_KEYS).forEach(function(key) {
                 localStorage.removeItem(key);
             });
             loadAllData();
@@ -698,21 +722,3 @@ function clearData() {
         }
     });
 }
-
-// 每日推送关怀（需要后端配合）
-// 这里只是演示，实际需要后端定时任务 + 推送服务
-function scheduleCaringNotification() {
-    // 检查是否已推送
-    const lastPush = localStorage.getItem('last_caring_push');
-    const today = new Date().toDateString();
-
-    if (lastPush === today) return;
-
-    // 显示关怀消息（实际项目中通过推送实现）
-    loadCaringMessage();
-
-    localStorage.setItem('last_caring_push', today);
-}
-
-// 启动时检查
-scheduleCaringNotification();

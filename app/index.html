@@ -3,72 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-    <title>运动陪伴 - 每天陪伴，温暖健身</title>
-    <meta name="description" content="专为中老年人打造的运动陪伴应用，记录每日运动、收藏健身视频、打卡分享，温暖陪伴每一天">
-    <meta property="og:title" content="运动陪伴 - 每天陪伴，温暖健身">
+    <title>运动陪伴</title>
+    <meta name="description" content="每天陪伴，温暖健身">
+    <meta property="og:title" content="运动陪伴">
     <meta property="og:description" content="专为中老年人打造的运动陪伴应用，记录每日运动、收藏健身视频、打卡分享，温暖陪伴每一天">
     <meta property="og:type" content="website">
     <meta property="og:image" content="https://ella060.github.io/Exercise-companion/og-image.png">
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <!-- 跳过导航链接，方便键盘用户直接访问主要内容 -->
     <a class="skip-link" href="#main-content">跳转到主要内容</a>
 
     <div class="app-container">
-        <!-- 页面容器 -->
         <main class="page-container" id="main-content">
+
             <!-- 首页 -->
             <div class="page active" id="page-home">
-                <div class="page-content">
-                    <div class="welcome-section">
-                        <div class="avatar">🏃‍♀️</div>
-                        <h1>早上好， 今天也要加油哦</h1>
-                        <p class="date" id="today-date"></p>
+                <div class="welcome-section">
+                    <div class="welcome-mark" aria-hidden="true"></div>
+                    <h1>早上好，今天也要加油哦</h1>
+                    <p class="date-text" id="today-date"></p>
+                </div>
+
+                <div class="quick-actions">
+                    <button class="quick-btn" onclick="switchPage('video')" aria-label="进入视频库">
+                        <span class="quick-btn-dot video" aria-hidden="true"></span>
+                        <span>
+                            <span class="quick-btn-label">视频库</span>
+                            <span class="quick-btn-hint">收藏的健身视频</span>
+                        </span>
+                    </button>
+                    <button class="quick-btn" onclick="switchPage('checkin')" aria-label="进入每日打卡">
+                        <span class="quick-btn-dot checkin" aria-hidden="true"></span>
+                        <span>
+                            <span class="quick-btn-label">每日打卡</span>
+                            <span class="quick-btn-hint">记录今天的运动</span>
+                        </span>
+                    </button>
+                </div>
+
+                <div class="stats-row">
+                    <div class="stat-item">
+                        <div class="stat-number has-streak" id="total-days">0</div>
+                        <div class="stat-label">连续打卡天数</div>
                     </div>
-                    <div class="quick-actions">
-                        <div class="action-card" onclick="switchPage('video')" role="button" tabindex="0" aria-label="进入视频库">
-                            <div class="action-icon" aria-hidden="true">📺</div>
-                            <div class="action-text">
-                                <h3>视频库</h3>
-                                <p>收藏的健身视频</p>
-                            </div>
-                        </div>
-                        <div class="action-card" onclick="switchPage('checkin')" role="button" tabindex="0" aria-label="进入每日打卡">
-                            <div class="action-icon" aria-hidden="true">✅</div>
-                            <div class="action-text">
-                                <h3>每日打卡</h3>
-                                <p>记录今天的运动</p>
-                            </div>
-                        </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="total-minutes">0</div>
+                        <div class="stat-label">累计运动分钟</div>
                     </div>
-                    <div class="stats-section">
-                        <div class="stat-card">
-                            <div class="stat-number" id="total-days">0</div>
-                            <div class="stat-label">连续打卡天数</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-number" id="total-minutes">0</div>
-                            <div class="stat-label">累计运动分钟</div>
-                        </div>
-                    </div>
-                    <div class="caring-message" id="caring-message">
-                        <div class="caring-icon">💝</div>
-                        <p>今天天气不错，适当活动一下对身体好哦~</p>
-                    </div>
+                </div>
+
+                <div class="caring-section" id="caring-section">
+                    <div class="caring-label">此刻想对你说</div>
+                    <p class="caring-text" id="caring-text">今天天气不错，适当活动一下对身体好哦</p>
                 </div>
             </div>
 
             <!-- 视频库 -->
             <div class="page" id="page-video">
                 <div class="page-header">
-                    <h2>📺 视频库</h2>
-                    <button class="btn-add" onclick="showAddVideoModal()">+ 添加视频</button>
+                    <h2>视频库</h2>
+                    <button class="btn-add" onclick="showAddVideoModal()">添加</button>
                 </div>
                 <div class="video-list" id="video-list">
                     <div class="empty-state">
-                        <p>还没有收藏的视频</p>
-                        <p>点击上方"+ 添加视频"粘贴链接</p>
+                        <div class="empty-state-mark">+</div>
+                        <h3>还没有收藏的视频</h3>
+                        <p>把喜欢的健身视频收藏到这里，随时都能找到</p>
+                        <span class="hint-text">支持抖音、B站等平台的视频链接</span>
                     </div>
                 </div>
             </div>
@@ -76,91 +78,88 @@
             <!-- 打卡 -->
             <div class="page" id="page-checkin">
                 <div class="page-header">
-                    <h2>✅ 每日打卡</h2>
+                    <h2>每日打卡</h2>
                 </div>
-                <div class="page-content">
-                    <div class="checkin-calendar" id="checkin-calendar">
-                        <div class="calendar-header">
-                            <button class="btn-nav" onclick="changeMonth(-1)">◀</button>
-                            <span id="calendar-month"></span>
-                            <button class="btn-nav" onclick="changeMonth(1)">▶</button>
-                        </div>
-                        <div class="calendar-grid" id="calendar-grid"></div>
+                <div class="checkin-calendar">
+                    <div class="calendar-header">
+                        <button class="btn-month-nav" onclick="changeMonth(-1)" aria-label="上个月">←</button>
+                        <span id="calendar-month"></span>
+                        <button class="btn-month-nav" onclick="changeMonth(1)" aria-label="下个月">→</button>
                     </div>
-                    <div class="checkin-form">
-                        <h3>今日打卡</h3>
-                        <div class="form-group">
-                            <label>运动时长（分钟）<span class="required-mark" aria-label="必填"> *</span></label>
-                            <input type="number" id="exercise-minutes" placeholder="请输入运动时长" min="1" required aria-required="true">
-                        </div>
-                        <div class="form-group">
-                            <label>运动类型</label>
-                            <select id="exercise-type">
-                                <option value="walking">散步</option>
-                                <option value="dancing">广场舞</option>
-                                <option value="yoga">瑜伽</option>
-                                <option value="taiji">太极</option>
-                                <option value="stretching">拉伸</option>
-                                <option value="other">其他</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>今日感想（可选）</label>
-                            <textarea id="exercise-note" placeholder="记录今天的运动感受..."></textarea>
-                        </div>
-                        <button class="btn-primary" onclick="submitCheckin()">完成打卡</button>
+                    <div class="calendar-grid" id="calendar-grid"></div>
+                </div>
+                <div class="checkin-form">
+                    <h3>今天动过了</h3>
+                    <div class="form-group">
+                        <label>运动时长（分钟）</label>
+                        <input type="number" id="exercise-minutes" placeholder="比如 30" min="1" required aria-required="true">
                     </div>
+                    <div class="form-group">
+                        <label>运动类型</label>
+                        <select id="exercise-type">
+                            <option value="walking">散步</option>
+                            <option value="dancing">广场舞</option>
+                            <option value="yoga">瑜伽</option>
+                            <option value="taiji">太极</option>
+                            <option value="stretching">拉伸</option>
+                            <option value="other">其他</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>今日感想（可不填）</label>
+                        <textarea id="exercise-note" placeholder="记录今天的感受..."></textarea>
+                    </div>
+                    <button class="btn-primary" onclick="submitCheckin()">完成打卡</button>
                 </div>
             </div>
 
             <!-- 海报 -->
             <div class="page" id="page-poster">
                 <div class="page-header">
-                    <h2>🎨 打卡海报</h2>
+                    <h2>打卡海报</h2>
                 </div>
-                <div class="page-content">
-                    <div class="poster-preview" id="poster-preview">
-                        <div class="poster-card" id="poster-card">
-                            <div class="poster-header">每日运动打卡</div>
-                            <div class="poster-date" id="poster-date"></div>
-                            <div class="poster-days">
-                                <span class="days-number" id="poster-days">1</span>
-                                <span class="days-label">天</span>
-                            </div>
-                            <div class="poster-stats">
-                                <div class="poster-stat">
-                                    <span id="poster-minutes">30</span>
-                                    <span>分钟</span>
-                                </div>
-                                <div class="poster-stat">
-                                    <span id="poster-type">广场舞</span>
-                                </div>
-                            </div>
-                            <div class="poster-footer">运动陪伴 · 每天进步一点点</div>
+                <div class="poster-preview">
+                    <div class="poster-card" id="poster-card">
+                        <div class="poster-badge">每日运动打卡</div>
+                        <div class="poster-date" id="poster-date"></div>
+                        <div class="poster-number-block">
+                            <span class="poster-number" id="poster-days">1</span>
+                            <span class="poster-number-label">天</span>
                         </div>
+                        <div class="poster-detail-row">
+                            <div class="poster-detail">
+                                <span class="poster-detail-val" id="poster-minutes">30</span>
+                                <span class="poster-detail-label">分钟</span>
+                            </div>
+                            <div class="poster-detail">
+                                <span class="poster-detail-val" id="poster-type">散步</span>
+                                <span class="poster-detail-label">类型</span>
+                            </div>
+                        </div>
+                        <div class="poster-footnote">运动陪伴 · 每天进步一点点</div>
                     </div>
-                    <div class="poster-actions">
-                        <button class="btn-secondary" onclick="refreshPoster()">🔄 换一组样式</button>
-                        <button class="btn-primary" onclick="sharePoster()">📤 分享海报</button>
-                    </div>
-                    <div class="share-guide">
-                        <p>点击分享后可保存图片到相册，或直接分享给微信好友</p>
-                    </div>
+                </div>
+                <div class="poster-actions">
+                    <button class="btn-secondary" onclick="refreshPoster()">换一个样式</button>
+                    <button class="btn-primary" onclick="sharePoster()">分享海报</button>
+                </div>
+                <div class="share-guide">
+                    <p>点击分享后，长按保存图片到相册</p>
                 </div>
             </div>
 
             <!-- 就医待办 -->
             <div class="page" id="page-medical">
                 <div class="page-header">
-                    <h2>🏥 就医待办</h2>
-                    <button class="btn-add" onclick="showAddMedicalModal()">+ 添加记录</button>
+                    <h2>就医待办</h2>
+                    <button class="btn-add" onclick="showAddMedicalModal()">添加</button>
                 </div>
-                <div class="page-content">
-                    <div class="medical-list" id="medical-list">
-                        <div class="empty-state">
-                            <p>还没有就医记录</p>
-                            <p>点击上方"+ 添加记录"添加复查提醒</p>
-                        </div>
+                <div class="medical-list" id="medical-list">
+                    <div class="empty-state">
+                        <div class="empty-state-mark">+</div>
+                        <h3>暂无就医提醒</h3>
+                        <p>添加复查和就医安排，这里帮你记着</p>
+                        <span class="hint-text">定期复查是对自己最好的关心</span>
                     </div>
                 </div>
             </div>
@@ -168,69 +167,68 @@
             <!-- 我的 -->
             <div class="page" id="page-profile">
                 <div class="page-header">
-                    <h2>👤 我的</h2>
+                    <h2>我的</h2>
                 </div>
-                <div class="page-content">
-                    <div class="profile-card">
-                        <div class="profile-avatar">🏃‍♀️</div>
-                        <div class="profile-info">
-                            <h3>运动爱好者</h3>
-                            <p>已坚持运动 <span id="profile-days">0</span> 天</p>
-                        </div>
+                <div class="profile-card">
+                    <div class="profile-avatar-mark" aria-hidden="true">—</div>
+                    <div class="profile-info">
+                        <h3>运动爱好者</h3>
+                        <p class="profile-stat">已坚持运动 <em id="profile-days">0</em> 天</p>
                     </div>
-                    <div class="menu-list">
-                        <div class="menu-item" onclick="showAbout()">
-                            <span>ℹ️ 关于我们</span>
-                            <span class="arrow">></span>
-                        </div>
-                        <div class="menu-item" onclick="clearData()">
-                            <span>🗑️ 清除数据</span>
-                            <span class="arrow">></span>
-                        </div>
+                </div>
+                <div class="menu-list">
+                    <div class="menu-item" onclick="showAbout()">
+                        <span>关于我们</span>
+                        <span class="arrow">→</span>
+                    </div>
+                    <div class="menu-item" onclick="clearData()">
+                        <span>清除数据</span>
+                        <span class="arrow">→</span>
                     </div>
                 </div>
             </div>
+
         </main>
 
         <!-- 底部导航 -->
         <nav class="bottom-nav">
             <div class="nav-item active" data-page="home" role="tab" aria-selected="true" aria-label="首页">
-                <div class="nav-icon" aria-hidden="true">🏠</div>
-                <div class="nav-text">首页</div>
+                <span class="nav-dot" aria-hidden="true"></span>
+                <span class="nav-text">首页</span>
             </div>
             <div class="nav-item" data-page="video" role="tab" aria-selected="false" aria-label="视频库">
-                <div class="nav-icon" aria-hidden="true">📺</div>
-                <div class="nav-text">视频</div>
+                <span class="nav-dot" aria-hidden="true"></span>
+                <span class="nav-text">视频</span>
             </div>
             <div class="nav-item" data-page="checkin" role="tab" aria-selected="false" aria-label="每日打卡">
-                <div class="nav-icon" aria-hidden="true">✅</div>
-                <div class="nav-text">打卡</div>
+                <span class="nav-dot" aria-hidden="true"></span>
+                <span class="nav-text">打卡</span>
             </div>
             <div class="nav-item" data-page="poster" role="tab" aria-selected="false" aria-label="打卡海报">
-                <div class="nav-icon" aria-hidden="true">🎨</div>
-                <div class="nav-text">海报</div>
+                <span class="nav-dot" aria-hidden="true"></span>
+                <span class="nav-text">海报</span>
             </div>
             <div class="nav-item" data-page="medical" role="tab" aria-selected="false" aria-label="就医待办">
-                <div class="nav-icon" aria-hidden="true">🏥</div>
-                <div class="nav-text">就医</div>
+                <span class="nav-dot" aria-hidden="true"></span>
+                <span class="nav-text">就医</span>
             </div>
         </nav>
     </div>
 
     <!-- 添加视频弹窗 -->
-    <div class="modal" id="add-video-modal" onclick="hideAddVideoModal()">
+    <div class="modal" id="add-video-modal">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="modal-header">
-                <h3>添加视频链接</h3>
-                <button class="btn-close" onclick="hideAddVideoModal()">×</button>
+                <h3>添加视频</h3>
+                <button class="btn-close" onclick="hideAddVideoModal()" aria-label="关闭">×</button>
             </div>
             <div class="modal-body">
                 <div class="form-group">
                     <label>视频链接</label>
-                    <input type="url" id="video-url" placeholder="请粘贴视频链接，如抖音、B站等">
+                    <input type="url" id="video-url" placeholder="粘贴抖音、B站等视频链接">
                 </div>
                 <div class="form-group">
-                    <label>视频标题</label>
+                    <label>标题</label>
                     <input type="text" id="video-title" placeholder="给视频起个名字">
                 </div>
                 <div class="form-group">
@@ -253,11 +251,11 @@
     </div>
 
     <!-- 添加就医记录弹窗 -->
-    <div class="modal" id="add-medical-modal" onclick="hideAddMedicalModal()">
+    <div class="modal" id="add-medical-modal">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="modal-header">
-                <h3>添加就医记录</h3>
-                <button class="btn-close" onclick="hideAddMedicalModal()">×</button>
+                <h3>添加就医提醒</h3>
+                <button class="btn-close" onclick="hideAddMedicalModal()" aria-label="关闭">×</button>
             </div>
             <div class="modal-body">
                 <div class="form-group">
@@ -269,12 +267,12 @@
                     <input type="text" id="medical-hospital" placeholder="如：市人民医院">
                 </div>
                 <div class="form-group">
-                    <label>科室</label>
+                    <label>科室（可不填）</label>
                     <input type="text" id="medical-department" placeholder="如：骨科">
                 </div>
                 <div class="form-group">
-                    <label>备注</label>
-                    <textarea id="medical-note" placeholder="注意事项，如：空腹、携带病历等"></textarea>
+                    <label>备注（可不填）</label>
+                    <textarea id="medical-note" placeholder="如：需要空腹、携带病历"></textarea>
                 </div>
             </div>
             <div class="modal-footer">
@@ -284,7 +282,7 @@
         </div>
     </div>
 
-    <!-- Toast提示 -->
+    <!-- Toast -->
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
     <script src="js/app.js"></script>
