@@ -66,9 +66,13 @@ function switchPage(pageId) {
 
     document.querySelectorAll('.nav-item').forEach(item => {
         item.classList.remove('active');
+        item.setAttribute('aria-selected', 'false');
     });
     const targetNav = document.querySelector(`.nav-item[data-page="${pageId}"]`);
-    if (targetNav) targetNav.classList.add('active');
+    if (targetNav) {
+        targetNav.classList.add('active');
+        targetNav.setAttribute('aria-selected', 'true');
+    }
 
     previousPage = currentPage;
     currentPage = pageId;

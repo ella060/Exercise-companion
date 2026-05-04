@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title>运动陪伴 - 每天陪伴，温暖健身</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
@@ -19,15 +19,15 @@
                         <p class="date" id="today-date"></p>
                     </div>
                     <div class="quick-actions">
-                        <div class="action-card" onclick="switchPage('video')">
-                            <div class="action-icon">📺</div>
+                        <div class="action-card" onclick="switchPage('video')" role="button" tabindex="0" aria-label="进入视频库">
+                            <div class="action-icon" aria-hidden="true">📺</div>
                             <div class="action-text">
                                 <h3>视频库</h3>
                                 <p>收藏的健身视频</p>
                             </div>
                         </div>
-                        <div class="action-card" onclick="switchPage('checkin')">
-                            <div class="action-icon">✅</div>
+                        <div class="action-card" onclick="switchPage('checkin')" role="button" tabindex="0" aria-label="进入每日打卡">
+                            <div class="action-icon" aria-hidden="true">✅</div>
                             <div class="action-text">
                                 <h3>每日打卡</h3>
                                 <p>记录今天的运动</p>
@@ -82,8 +82,8 @@
                     <div class="checkin-form">
                         <h3>今日打卡</h3>
                         <div class="form-group">
-                            <label>运动时长（分钟）</label>
-                            <input type="number" id="exercise-minutes" placeholder="请输入运动时长" min="1">
+                            <label>运动时长（分钟）<span class="required-mark" aria-label="必填"> *</span></label>
+                            <input type="number" id="exercise-minutes" placeholder="请输入运动时长" min="1" required aria-required="true">
                         </div>
                         <div class="form-group">
                             <label>运动类型</label>
@@ -186,24 +186,24 @@
 
         <!-- 底部导航 -->
         <nav class="bottom-nav">
-            <div class="nav-item active" data-page="home">
-                <div class="nav-icon">🏠</div>
+            <div class="nav-item active" data-page="home" role="tab" aria-selected="true" aria-label="首页">
+                <div class="nav-icon" aria-hidden="true">🏠</div>
                 <div class="nav-text">首页</div>
             </div>
-            <div class="nav-item" data-page="video">
-                <div class="nav-icon">📺</div>
+            <div class="nav-item" data-page="video" role="tab" aria-selected="false" aria-label="视频库">
+                <div class="nav-icon" aria-hidden="true">📺</div>
                 <div class="nav-text">视频</div>
             </div>
-            <div class="nav-item" data-page="checkin">
-                <div class="nav-icon">✅</div>
+            <div class="nav-item" data-page="checkin" role="tab" aria-selected="false" aria-label="每日打卡">
+                <div class="nav-icon" aria-hidden="true">✅</div>
                 <div class="nav-text">打卡</div>
             </div>
-            <div class="nav-item" data-page="poster">
-                <div class="nav-icon">🎨</div>
+            <div class="nav-item" data-page="poster" role="tab" aria-selected="false" aria-label="打卡海报">
+                <div class="nav-icon" aria-hidden="true">🎨</div>
                 <div class="nav-text">海报</div>
             </div>
-            <div class="nav-item" data-page="medical">
-                <div class="nav-icon">🏥</div>
+            <div class="nav-item" data-page="medical" role="tab" aria-selected="false" aria-label="就医待办">
+                <div class="nav-icon" aria-hidden="true">🏥</div>
                 <div class="nav-text">就医</div>
             </div>
         </nav>
@@ -277,7 +277,7 @@
     </div>
 
     <!-- Toast提示 -->
-    <div class="toast" id="toast"></div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
     <script src="js/app.js"></script>
 </body>

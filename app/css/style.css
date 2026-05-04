@@ -56,6 +56,13 @@
     box-sizing: border-box;
 }
 
+/* ===== 键盘焦点样式 (无障碍) ===== */
+*:focus-visible {
+    outline: 2px solid var(--secondary-color);
+    outline-offset: 3px;
+    border-radius: 4px;
+}
+
 body {
     font-family: "PingFang SC", "Noto Sans SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, sans-serif;
     background: var(--bg-gradient);
@@ -471,6 +478,11 @@ body {
     font-weight: 600;
     color: var(--text-primary);
     margin-bottom: 8px;
+}
+
+.required-mark {
+    color: #E06C6C;
+    font-weight: 700;
 }
 
 .form-group input,
