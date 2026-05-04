@@ -73,11 +73,31 @@ body {
     letter-spacing: 0.01em;
     max-width: 430px;
     margin: 0 auto;
+    scroll-behavior: smooth;
+}
+
+/* ===== 跳过导航链接（键盘用户辅助） ===== */
+.skip-link {
+    position: absolute;
+    top: -100px;
+    left: 16px;
+    background: var(--secondary-color);
+    color: #fff;
+    padding: 16px 24px;
+    border-radius: var(--radius-sm);
+    font-size: 17px;
+    font-weight: 600;
+    text-decoration: none;
+    z-index: 1000;
+    transition: top var(--duration-fast) var(--ease-smooth);
+}
+.skip-link:focus {
+    top: 16px;
 }
 
 /* ===== App容器 ===== */
 .app-container {
-    min-height: 100vh;
+    min-height: 100dvh;
     position: relative;
     padding-bottom: 70px;
 }
@@ -187,6 +207,7 @@ body {
     font-weight: 700;
     color: var(--text-primary);
     margin-bottom: 10px;
+    text-wrap: balance;
 }
 
 .welcome-section .date {
@@ -1121,6 +1142,13 @@ body {
 .confirm-actions {
     display: flex;
     gap: 12px;
+}
+.confirm-actions.single-action {
+    justify-content: center;
+}
+.confirm-actions.single-action .confirm-btn {
+    flex: 0 1 auto;
+    min-width: 140px;
 }
 
 .confirm-btn {

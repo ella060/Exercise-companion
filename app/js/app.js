@@ -627,7 +627,8 @@ function showConfirmDialog(options) {
         cancelText = '取消',
         onConfirm,
         onCancel,
-        isDangerous = false
+        isDangerous = false,
+        showCancel = true
     } = options;
 
     const overlay = document.createElement('div');
@@ -637,8 +638,8 @@ function showConfirmDialog(options) {
             <div class="confirm-icon">${isDangerous ? '⚠' : '💝'}</div>
             <div class="confirm-title">${title}</div>
             <div class="confirm-message">${message}</div>
-            <div class="confirm-actions">
-                <button class="confirm-btn cancel">${cancelText}</button>
+            <div class="confirm-actions ${showCancel && cancelText ? '' : 'single-action'}">
+                ${showCancel && cancelText ? `<button class="confirm-btn cancel">${cancelText}</button>` : ''}
                 <button class="confirm-btn confirm">${confirmText}</button>
             </div>
         </div>
@@ -654,10 +655,13 @@ function showConfirmDialog(options) {
         setTimeout(() => overlay.remove(), 300);
     };
 
-    overlay.querySelector('.cancel').addEventListener('click', () => {
-        closeDialog();
-        onCancel && onCancel();
-    });
+    const cancelBtn = overlay.querySelector('.cancel');
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', () => {
+            closeDialog();
+            onCancel && onCancel();
+        });
+    }
 
     overlay.querySelector('.confirm').addEventListener('click', () => {
         closeDialog();
@@ -667,7 +671,13 @@ function showConfirmDialog(options) {
 
 // ===== 关于我们 =====
 function showAbout() {
-    alert('运动陪伴 v1.0\n\n一款温暖的中老年健身应用\n每天陪伴，温暖健身');
+    showConfirmDialog({
+        title: '关于运动陪伴',
+        message: '运动陪伴 v1.0\n\n一款温暖的中老年健身应用\n每天陪伴，温暖健身',
+        confirmText: '知道了',
+        cancelText: '',
+        showCancel: false
+    });
 }
 
 // ===== 清除数据 =====
